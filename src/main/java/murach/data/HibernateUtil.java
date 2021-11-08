@@ -1,5 +1,6 @@
 package murach.data;
 
+import java.net.URI;
 import java.util.Properties;
 
 import org.hibernate.SessionFactory;
@@ -16,21 +17,26 @@ public class HibernateUtil {
   public static SessionFactory getSessionFactory() {
     if (sessionFactory == null) {
       try {
+        URI dbUri = new URI(System.getenv("DATABASE_URL"));
+        String username = dbUri.getUserInfo().split(":")[0];
+        String password = dbUri.getUserInfo().split(":")[1];
+        String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+
         Configuration configuration = new Configuration();
 
         // Hibernate settings equivalent to hibernate.cfg.xml's properties
         Properties settings = new Properties();
-        settings.put(Environment.DRIVER, "com.mysql.jdbc.Driver");
-        settings.put(Environment.URL, "jdbc:mysql://localhost:3306/shoppingcart?useSSL=false");
-        settings.put(Environment.USER, "root");
-        settings.put(Environment.PASS, "sesame");
-        settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
+        settings.put(Environment.DRIVER, "org.postgresql.Driver");
+        settings.put(Environment.URL, dbUrl);
+        settings.put(Environment.USER, username);
+        settings.put(Environment.PASS, password);
+        settings.put(Environment.DIALECT, "org.hibernate.dialect.PostgreSQL9Dialect");
 
         settings.put(Environment.SHOW_SQL, "true");
 
         settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
 
-        settings.put(Environment.HBM2DDL_AUTO, "create-drop");
+        // settings.put(Environment.HBM2DDL_AUTO, "create-drop");
 
         configuration.setProperties(settings);
         configuration.addAnnotatedClass(Product.class);
